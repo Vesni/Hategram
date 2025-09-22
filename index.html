@@ -593,6 +593,12 @@
                         <form id="postForm" onsubmit="createPost(event)">
                             <textarea id="postContent" placeholder="What's on your mind?" class="w-full p-3 sm:p-4 border border-gray-200 rounded-lg sm:rounded-xl mb-3 sm:mb-4 resize-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-sm sm:text-base" rows="3"></textarea>
                             
+                            <!-- Tags Input -->
+                            <div class="mb-3 sm:mb-4">
+                                <input type="text" id="postTags" placeholder="Add tags (e.g., #photography #nature #art)" class="w-full p-3 sm:p-4 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-sm sm:text-base">
+                                <div id="tagPreview" class="mt-2 flex flex-wrap gap-2"></div>
+                            </div>
+                            
                             <!-- Image Upload Area - Mobile Optimized -->
                             <div id="imageUploadArea" class="image-upload-area p-4 sm:p-6 mb-3 sm:mb-4 text-center cursor-pointer" onclick="document.getElementById('postImage').click()">
                                 <div id="uploadPrompt">
@@ -821,6 +827,11 @@
                             <div class="text-2xl mb-2">📊</div>
                             Analytics
                         </button>
+                        <button onclick="showAdminInbox()" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-6 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 font-semibold relative">
+                            <div class="text-2xl mb-2">📥</div>
+                            Admin Inbox
+                            <span id="inboxBadge" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">0</span>
+                        </button>
                     </div>
                     
                     <!-- Advanced Controls -->
@@ -954,6 +965,22 @@
                 <!-- Analytics will appear here -->
             </div>
             <button onclick="closeAnalyticsModal()" class="mt-6 w-full bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 transition-all duration-300">Close</button>
+        </div>
+    </div>
+
+    <!-- Admin Inbox Modal -->
+    <div id="adminInboxModal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden">
+        <div class="glass-effect rounded-2xl p-6 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto slide-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-red-600 flex items-center">
+                    📥 Admin Inbox
+                    <span id="inboxCount" class="ml-3 bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">0 Reports</span>
+                </h3>
+                <button onclick="closeAdminInboxModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            <div id="adminInboxContent" class="space-y-4">
+                <!-- Inbox content will appear here -->
+            </div>
         </div>
     </div>
 
@@ -1111,13 +1138,17 @@
         let lastPostsLoad = 0;
         const CACHE_DURATION = 30000; // 30 seconds
         
-        // Initialize optimized image upload
+        // Initialize optimized image upload and tags
         document.addEventListener('DOMContentLoaded', () => {
             const imageInput = document.getElementById('postImage');
             const uploadArea = document.getElementById('imageUploadArea');
+            const tagsInput = document.getElementById('postTags');
             
             // Optimized event handlers
             imageInput.addEventListener('change', handleImageSelect, { passive: true });
+            
+            // Tags input handler
+            tagsInput.addEventListener('input', handleTagsInput, { passive: true });
             
             // Optimized drag and drop
             uploadArea.addEventListener('dragover', (e) => {
@@ -1139,6 +1170,26 @@
                 }
             }, { passive: false });
         });
+
+        function handleTagsInput() {
+            const tagsInput = document.getElementById('postTags');
+            const tagPreview = document.getElementById('tagPreview');
+            const text = tagsInput.value;
+            
+            // Extract hashtags
+            const hashtags = text.match(/#\w+/g) || [];
+            
+            // Clear preview
+            tagPreview.innerHTML = '';
+            
+            // Show tag previews
+            hashtags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium';
+                tagElement.textContent = tag;
+                tagPreview.appendChild(tagElement);
+            });
+        }
 
         async function handleImageSelect() {
             const file = document.getElementById('postImage').files[0];
@@ -1388,10 +1439,15 @@
                     }
                 }
 
+                // Get tags
+                const tagsText = document.getElementById('postTags').value;
+                const hashtags = tagsText.match(/#\w+/g) || [];
+
                 // Fast post creation
                 const postData = {
                     content: content.trim(),
                     imageUrl,
+                    tags: hashtags,
                     authorId: currentUser.uid,
                     authorName: currentUser.displayName || currentUser.email,
                     likes: [],
@@ -1503,6 +1559,22 @@
                             return null;
                         }
                         
+                        // Filter out blocked users and hidden posts
+                        if (currentUser) {
+                            const currentUserDoc = await db.collection('users').doc(currentUser.uid).get();
+                            const currentUserData = currentUserDoc.data();
+                            const blocked = currentUserData?.blocked || [];
+                            
+                            if (blocked.includes(post.authorId)) {
+                                return null; // Skip posts from blocked users
+                            }
+                        }
+                        
+                        // Hide posts marked as hidden (unless admin)
+                        if (post.isHidden && (!currentUser || !authorData.isAdmin)) {
+                            return null;
+                        }
+                        
                         const element = await createPostElement(doc.id, post, authorData);
                         postsCache.set(`post_${doc.id}`, { post, authorData, element: element.outerHTML });
                         return element;
@@ -1572,6 +1644,12 @@
             }
             
             const isAdmin = userData.isAdmin || false;
+            
+            // Check if current user is following this author
+            let isFollowing = false;
+            if (currentUser && currentUser.uid !== post.authorId) {
+                isFollowing = await checkFollowStatus(post.authorId);
+            }
 
             const postDiv = document.createElement('div');
             postDiv.className = 'glass-effect rounded-2xl p-6 post-card slide-in';
@@ -1601,19 +1679,74 @@
                     </div>
                     <div class="flex items-center space-x-2">
                         ${currentUser && currentUser.uid !== post.authorId ? `
-                            <button onclick="followUser('${post.authorId}')" class="text-blue-500 hover:text-blue-600 text-sm font-semibold transition-colors">Follow</button>
+                            <button id="followBtn_${postId}" onclick="toggleFollow('${post.authorId}', '${postId}')" class="${isFollowing ? 'text-green-500 hover:text-green-600' : 'text-blue-500 hover:text-blue-600'} text-sm font-semibold transition-colors">
+                                <span class="loading-follow-${post.authorId} hidden">Following...</span>
+                                <span class="follow-text-${post.authorId}">${isFollowing ? 'Following' : 'Follow'}</span>
+                            </button>
                         ` : ''}
-                        ${canDelete ? `<button onclick="deletePost('${postId}')" class="text-red-500 hover:text-red-600 transition-colors">🗑️</button>` : ''}
-                        <button class="text-gray-400 hover:text-gray-600 transition-colors">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
-                            </svg>
-                        </button>
+                        <div class="relative">
+                            <button onclick="togglePostMenu('${postId}')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
+                                </svg>
+                            </button>
+                            <div id="postMenu_${postId}" class="hidden absolute right-0 top-8 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 min-w-48">
+                                ${canDelete || (currentUser && userData?.isAdmin) ? `
+                                    <button onclick="deletePost('${postId}'); closePostMenu('${postId}')" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        Delete Post
+                                    </button>
+                                ` : ''}
+                                ${currentUser && currentUser.uid !== post.authorId ? `
+                                    <button onclick="reportPost('${postId}'); closePostMenu('${postId}')" class="w-full text-left px-4 py-2 text-orange-600 hover:bg-orange-50 transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                        </svg>
+                                        Report Post
+                                    </button>
+                                    <button onclick="blockUser('${post.authorId}'); closePostMenu('${postId}')" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
+                                        </svg>
+                                        Block User
+                                    </button>
+                                ` : ''}
+                                <button onclick="sharePost('${postId}'); closePostMenu('${postId}')" class="w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50 transition-colors flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+                                    </svg>
+                                    Share Post
+                                </button>
+                                ${currentUser && userData?.isAdmin ? `
+                                    <hr class="my-2">
+                                    <div class="px-4 py-1 text-xs text-gray-500 font-semibold">ADMIN ACTIONS</div>
+                                    <button onclick="banUser('${post.authorId}'); closePostMenu('${postId}')" class="w-full text-left px-4 py-2 text-red-700 hover:bg-red-50 transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
+                                        </svg>
+                                        Ban Author
+                                    </button>
+                                    <button onclick="hidePost('${postId}'); closePostMenu('${postId}')" class="w-full text-left px-4 py-2 text-yellow-700 hover:bg-yellow-50 transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>
+                                        </svg>
+                                        Hide Post
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Post Content -->
                 ${post.content ? `<p class="mb-4 text-gray-800 leading-relaxed">${post.content}</p>` : ''}
+                ${post.tags && post.tags.length > 0 ? `
+                    <div class="mb-4 flex flex-wrap gap-2">
+                        ${post.tags.map(tag => `<span class="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:shadow-md transition-all">${tag}</span>`).join('')}
+                    </div>
+                ` : ''}
                 ${post.imageUrl ? `
                     <div class="mb-4 rounded-xl overflow-hidden">
                         <img src="${post.imageUrl}" alt="Post image" class="w-full max-h-96 object-cover post-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -1653,7 +1786,7 @@
                             </svg>
                         </button>
                     </div>
-                    <button onclick="reportPost('${postId}')" class="text-gray-400 hover:text-red-500 text-sm transition-colors">Report</button>
+
                 </div>
             `;
 
@@ -1667,26 +1800,72 @@
             }
 
             try {
+                // Find the like button and update it immediately for better UX
+                const likeButton = document.querySelector(`button[onclick="toggleLike('${postId}')"]`);
+                const likeIcon = likeButton?.querySelector('svg');
+                const likeCount = likeButton?.querySelector('span');
+                
                 const postRef = db.collection('posts').doc(postId);
-                const postDoc = await postRef.get();
-                const post = postDoc.data();
                 
-                const likes = post.likes || [];
-                const userIndex = likes.indexOf(currentUser.uid);
+                // Use transaction for atomic like/unlike
+                await db.runTransaction(async (transaction) => {
+                    const postDoc = await transaction.get(postRef);
+                    if (!postDoc.exists) {
+                        throw new Error('Post does not exist!');
+                    }
+                    
+                    const post = postDoc.data();
+                    const likes = post.likes || [];
+                    const userIndex = likes.indexOf(currentUser.uid);
+                    
+                    let newLikes;
+                    let isLiked;
+                    
+                    if (userIndex > -1) {
+                        // Unlike
+                        newLikes = likes.filter(uid => uid !== currentUser.uid);
+                        isLiked = false;
+                    } else {
+                        // Like
+                        newLikes = [...likes, currentUser.uid];
+                        isLiked = true;
+                        showNotification('❤️ Liked!', 'success');
+                    }
+                    
+                    // Update immediately in UI
+                    if (likeButton) {
+                        likeButton.className = `flex items-center space-x-2 like-button ${isLiked ? 'text-red-500' : 'text-gray-600'} hover:text-red-500 transition-all duration-300`;
+                        if (likeIcon) {
+                            likeIcon.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+                        }
+                        if (likeCount) {
+                            likeCount.textContent = newLikes.length;
+                        }
+                        
+                        // Add heart animation for likes
+                        if (isLiked) {
+                            likeButton.classList.add('heart-animation');
+                            setTimeout(() => {
+                                likeButton.classList.remove('heart-animation');
+                            }, 600);
+                        }
+                    }
+                    
+                    // Update in database
+                    transaction.update(postRef, { likes: newLikes });
+                });
                 
-                if (userIndex > -1) {
-                    likes.splice(userIndex, 1);
-                } else {
-                    likes.push(currentUser.uid);
-                    // Add heart animation
-                    showNotification('❤️ Liked!', 'success');
-                }
+                // Clear cache to ensure fresh data on next load
+                postsCache.delete(`post_${postId}`);
                 
-                await postRef.update({ likes });
-                loadPosts();
             } catch (error) {
                 console.error('Error toggling like:', error);
                 showNotification('Failed to update like 😞', 'error');
+                
+                // Reload posts to fix any UI inconsistencies
+                setTimeout(() => {
+                    loadPosts();
+                }, 1000);
             }
         }
 
@@ -2007,9 +2186,227 @@
                     document.getElementById('adminPanel').classList.remove('hidden');
                     loadAdminStats();
                     startRealTimeUpdates();
+                    updateAdminInboxBadge(); // Update inbox badge for admins
                 }
             } catch (error) {
                 console.error('Error checking admin status:', error);
+            }
+        }
+
+        // Show Admin Inbox
+        async function showAdminInbox() {
+            if (!currentUser) return;
+            
+            // Check admin status
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            if (!userDoc.data()?.isAdmin) {
+                showNotification('Access denied! Admin privileges required 🚫', 'error');
+                return;
+            }
+            
+            document.getElementById('adminInboxModal').classList.remove('hidden');
+            
+            try {
+                const inboxContent = document.getElementById('adminInboxContent');
+                inboxContent.innerHTML = `
+                    <div class="flex justify-center items-center py-8">
+                        <div class="loading-spinner-large"></div>
+                        <span class="ml-3 text-gray-600">Loading reports...</span>
+                    </div>
+                `;
+
+                // Get pending reports
+                const reportsSnapshot = await db.collection('reports')
+                    .where('status', '==', 'pending')
+                    .orderBy('timestamp', 'desc')
+                    .get();
+                
+                inboxContent.innerHTML = '';
+                document.getElementById('inboxCount').textContent = `${reportsSnapshot.size} Reports`;
+
+                if (reportsSnapshot.empty) {
+                    inboxContent.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="text-6xl mb-4">✅</div>
+                            <h3 class="text-xl font-bold text-green-600 mb-2">All Clear!</h3>
+                            <p class="text-gray-600">No pending reports to review</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Display reports
+                reportsSnapshot.docs.forEach((doc, index) => {
+                    const report = doc.data();
+                    const reportId = doc.id;
+                    
+                    const reportElement = document.createElement('div');
+                    reportElement.className = 'border-2 border-red-200 rounded-2xl p-6 bg-gradient-to-r from-red-50 to-orange-50 hover:shadow-xl transition-all duration-300';
+                    
+                    reportElement.innerHTML = `
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="text-3xl">🚨</div>
+                                <div>
+                                    <h4 class="font-bold text-lg text-gray-800">Report #${reportId.substring(0, 8)}</h4>
+                                    <div class="flex items-center space-x-2 text-sm text-gray-600">
+                                        <span>📝 By: <strong>${report.reporterName}</strong></span>
+                                        <span>•</span>
+                                        <span>🕒 ${report.createdAt ? new Date(report.createdAt.toDate()).toLocaleString() : 'Recently'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="resolveReport('${reportId}', 'dismissed')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all">
+                                    ✅ Dismiss
+                                </button>
+                                <button onclick="resolveReport('${reportId}', 'action_taken')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all">
+                                    ⚡ Take Action
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-4 border border-gray-200">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <h5 class="font-semibold text-gray-800 mb-2">📋 Report Details</h5>
+                                    <p class="text-sm text-gray-600 mb-1"><strong>Reason:</strong> ${report.reason}</p>
+                                    <p class="text-sm text-gray-600"><strong>Post Author:</strong> ${report.postAuthor}</p>
+                                </div>
+                                <div>
+                                    <h5 class="font-semibold text-gray-800 mb-2">📊 Quick Actions</h5>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button onclick="viewReportedPost('${report.postId}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                                            👁️ View Post
+                                        </button>
+                                        <button onclick="banUser('${report.postAuthorId}')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs">
+                                            🚫 Ban Author
+                                        </button>
+                                        <button onclick="deletePost('${report.postId}')" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-xs">
+                                            🗑️ Delete Post
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <h5 class="font-semibold text-gray-800 mb-2">📄 Reported Content</h5>
+                                <p class="text-gray-700 text-sm">${report.postContent || 'No content available'}</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add staggered animation
+                    setTimeout(() => {
+                        reportElement.style.opacity = '0';
+                        reportElement.style.transform = 'translateY(20px)';
+                        inboxContent.appendChild(reportElement);
+                        
+                        requestAnimationFrame(() => {
+                            reportElement.style.transition = 'all 0.5s ease';
+                            reportElement.style.opacity = '1';
+                            reportElement.style.transform = 'translateY(0)';
+                        });
+                    }, index * 100);
+                });
+
+            } catch (error) {
+                console.error('Error loading admin inbox:', error);
+                const inboxContent = document.getElementById('adminInboxContent');
+                inboxContent.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">❌</div>
+                        <h3 class="text-xl font-bold text-red-600 mb-2">Error Loading Inbox</h3>
+                        <p class="text-gray-600 mb-4">Failed to load reports</p>
+                        <button onclick="showAdminInbox()" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function closeAdminInboxModal() {
+            document.getElementById('adminInboxModal').classList.add('hidden');
+        }
+
+        // Resolve report
+        async function resolveReport(reportId, action) {
+            try {
+                await db.collection('reports').doc(reportId).update({
+                    status: action,
+                    resolvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    resolvedBy: currentUser.uid
+                });
+                
+                showNotification(`✅ Report ${action === 'dismissed' ? 'dismissed' : 'resolved'}!`, 'success');
+                showAdminInbox(); // Refresh inbox
+                updateAdminInboxBadge(); // Update badge
+                
+            } catch (error) {
+                console.error('Error resolving report:', error);
+                showNotification('❌ Failed to resolve report!', 'error');
+            }
+        }
+
+        // View reported post
+        async function viewReportedPost(postId) {
+            try {
+                const postDoc = await db.collection('posts').doc(postId).get();
+                if (!postDoc.exists) {
+                    showNotification('❌ Post not found (may have been deleted)', 'error');
+                    return;
+                }
+                
+                const post = postDoc.data();
+                
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 modal-backdrop flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="glass-effect rounded-2xl p-6 max-w-2xl w-full mx-4 modal-enter">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-blue-600">👁️ Reported Post</h3>
+                            <button onclick="this.closest('.modal-backdrop').remove()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="bg-gray-50 p-4 rounded-xl">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold">
+                                        ${post.authorName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">${post.authorName}</p>
+                                        <p class="text-sm text-gray-500">${post.createdAt ? new Date(post.createdAt.toDate()).toLocaleString() : 'Recently'}</p>
+                                    </div>
+                                </div>
+                                
+                                ${post.content ? `<p class="text-gray-800 mb-3">${post.content}</p>` : ''}
+                                
+                                ${post.tags && post.tags.length > 0 ? `
+                                    <div class="mb-3 flex flex-wrap gap-2">
+                                        ${post.tags.map(tag => `<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">${tag}</span>`).join('')}
+                                    </div>
+                                ` : ''}
+                                
+                                ${post.imageUrl ? `
+                                    <img src="${post.imageUrl}" alt="Post image" class="w-full max-h-64 object-cover rounded-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div class="hidden text-gray-500 text-center py-8">Image failed to load</div>
+                                ` : ''}
+                                
+                                <div class="flex items-center space-x-4 text-sm text-gray-500 mt-3">
+                                    <span>❤️ ${(post.likes || []).length} likes</span>
+                                    <span>💬 ${(post.comments || []).length} comments</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+            } catch (error) {
+                console.error('Error viewing post:', error);
+                showNotification('❌ Failed to load post!', 'error');
             }
         }
 
@@ -2181,8 +2578,9 @@
                             <h4 class="font-semibold text-gray-800 mb-1">${user.displayName}</h4>
                             <p class="text-sm text-gray-500 mb-4">@${user.username || 'user'}</p>
                             <div class="flex space-x-2">
-                                <button onclick="followUser('${doc.id}')" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-all">
-                                    Follow
+                                <button onclick="toggleFollow('${doc.id}', 'explore')" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-all">
+                                    <span class="loading-follow-${doc.id} hidden">Following...</span>
+                                    <span class="follow-text-${doc.id}">Follow</span>
                                 </button>
                                 <button onclick="startChat('${doc.id}')" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg text-sm font-semibold transition-all">
                                     Message
@@ -2296,8 +2694,9 @@
                                             <p class="font-semibold text-gray-800">${user.displayName}</p>
                                             <p class="text-sm text-gray-500">@${user.username || 'user'}</p>
                                         </div>
-                                        <button onclick="followUser('${doc.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all">
-                                            Follow
+                                        <button onclick="toggleFollow('${doc.id}', 'search')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all">
+                                            <span class="loading-follow-${doc.id} hidden">Following...</span>
+                                            <span class="follow-text-${doc.id}">Follow</span>
                                         </button>
                                     </div>
                                 `;
@@ -2756,6 +3155,136 @@
             }
         }
 
+        // Post Menu Functions
+        function togglePostMenu(postId) {
+            // Close all other menus first
+            document.querySelectorAll('[id^="postMenu_"]').forEach(menu => {
+                if (menu.id !== `postMenu_${postId}`) {
+                    menu.classList.add('hidden');
+                }
+            });
+            
+            const menu = document.getElementById(`postMenu_${postId}`);
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
+        function closePostMenu(postId) {
+            const menu = document.getElementById(`postMenu_${postId}`);
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('[id^="postMenu_"]') && !e.target.closest('button[onclick*="togglePostMenu"]')) {
+                document.querySelectorAll('[id^="postMenu_"]').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            }
+        });
+
+        // Block User Function
+        async function blockUser(userId) {
+            if (!currentUser || currentUser.uid === userId) return;
+            
+            if (confirm('Are you sure you want to block this user? You won\'t see their posts anymore.')) {
+                try {
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    
+                    await db.runTransaction(async (transaction) => {
+                        const userDoc = await transaction.get(userRef);
+                        const userData = userDoc.data();
+                        
+                        const blocked = userData.blocked || [];
+                        const following = userData.following || [];
+                        
+                        if (!blocked.includes(userId)) {
+                            blocked.push(userId);
+                            
+                            // Also unfollow if following
+                            const newFollowing = following.filter(id => id !== userId);
+                            
+                            transaction.update(userRef, { 
+                                blocked,
+                                following: newFollowing
+                            });
+                            
+                            // Remove from target's followers
+                            const targetRef = db.collection('users').doc(userId);
+                            const targetDoc = await transaction.get(targetRef);
+                            const targetData = targetDoc.data();
+                            const targetFollowers = targetData.followers || [];
+                            const newTargetFollowers = targetFollowers.filter(id => id !== currentUser.uid);
+                            
+                            transaction.update(targetRef, { followers: newTargetFollowers });
+                        }
+                    });
+                    
+                    showNotification('User blocked successfully! 🚫', 'success');
+                    loadPosts(); // Refresh posts to hide blocked user's content
+                    loadUserProfile(); // Update profile counts
+                    
+                } catch (error) {
+                    console.error('Error blocking user:', error);
+                    showNotification('Failed to block user: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Share Post Function
+        async function sharePost(postId) {
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'Check out this post on HateGram!',
+                        text: 'Found this interesting post on HateGram',
+                        url: window.location.href + '#post-' + postId
+                    });
+                    showNotification('Post shared! 📤', 'success');
+                } else {
+                    // Fallback: copy to clipboard
+                    const url = window.location.href + '#post-' + postId;
+                    await navigator.clipboard.writeText(url);
+                    showNotification('Post link copied to clipboard! 📋', 'success');
+                }
+            } catch (error) {
+                console.error('Error sharing post:', error);
+                showNotification('Failed to share post 😞', 'error');
+            }
+        }
+
+        // Hide Post Function (Admin)
+        async function hidePost(postId) {
+            if (!currentUser) return;
+            
+            // Check admin status
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            if (!userDoc.data()?.isAdmin) {
+                showNotification('Access denied! Admin privileges required 🚫', 'error');
+                return;
+            }
+            
+            if (confirm('Hide this post from all users?')) {
+                try {
+                    await db.collection('posts').doc(postId).update({
+                        isHidden: true,
+                        hiddenBy: currentUser.uid,
+                        hiddenAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    showNotification('Post hidden successfully! 👁️‍🗨️', 'success');
+                    loadPosts(); // Refresh posts
+                    
+                } catch (error) {
+                    console.error('Error hiding post:', error);
+                    showNotification('Failed to hide post: ' + error.message, 'error');
+                }
+            }
+        }
+
         // Initialize the app
         document.addEventListener('DOMContentLoaded', () => {
             showSection('feed');
@@ -2789,12 +3318,25 @@
             }
         }
 
-        async function followUser(userId) {
+        // Enhanced Follow System
+        async function toggleFollow(userId, postId) {
             if (!currentUser || currentUser.uid === userId) return;
 
             try {
+                // Show loading state
+                const loadingSpan = document.querySelector(`.loading-follow-${userId}`);
+                const textSpan = document.querySelector(`.follow-text-${userId}`);
+                
+                if (loadingSpan && textSpan) {
+                    loadingSpan.classList.remove('hidden');
+                    textSpan.classList.add('hidden');
+                }
+
                 const userRef = db.collection('users').doc(currentUser.uid);
                 const targetRef = db.collection('users').doc(userId);
+                
+                let isFollowing = false;
+                let action = '';
                 
                 await db.runTransaction(async (transaction) => {
                     const userDoc = await transaction.get(userRef);
@@ -2806,18 +3348,89 @@
                     const following = userData.following || [];
                     const followers = targetData.followers || [];
                     
-                    if (!following.includes(userId)) {
+                    if (following.includes(userId)) {
+                        // Unfollow
+                        const newFollowing = following.filter(id => id !== userId);
+                        const newFollowers = followers.filter(id => id !== currentUser.uid);
+                        
+                        transaction.update(userRef, { following: newFollowing });
+                        transaction.update(targetRef, { followers: newFollowers });
+                        
+                        isFollowing = false;
+                        action = 'unfollowed';
+                    } else {
+                        // Follow
                         following.push(userId);
                         followers.push(currentUser.uid);
                         
                         transaction.update(userRef, { following });
                         transaction.update(targetRef, { followers });
+                        
+                        isFollowing = true;
+                        action = 'followed';
                     }
                 });
                 
-                showNotification('User followed! 👥', 'success');
+                // Update UI immediately
+                updateFollowButtons(userId, isFollowing);
+                
+                showNotification(isFollowing ? 'User followed! 👥' : 'User unfollowed! 👋', 'success');
+                
+                // Update profile counts if on profile page
+                loadUserProfile();
+                
             } catch (error) {
-                showNotification('Error following user: ' + error.message, 'error');
+                console.error('Error toggling follow:', error);
+                showNotification('Error updating follow status: ' + error.message, 'error');
+                
+                // Reset loading state
+                const loadingSpan = document.querySelector(`.loading-follow-${userId}`);
+                const textSpan = document.querySelector(`.follow-text-${userId}`);
+                
+                if (loadingSpan && textSpan) {
+                    loadingSpan.classList.add('hidden');
+                    textSpan.classList.remove('hidden');
+                }
+            }
+        }
+
+        function updateFollowButtons(userId, isFollowing) {
+            // Update all follow buttons for this user
+            const followButtons = document.querySelectorAll(`.follow-text-${userId}`);
+            const loadingSpans = document.querySelectorAll(`.loading-follow-${userId}`);
+            
+            followButtons.forEach(button => {
+                button.textContent = isFollowing ? 'Following' : 'Follow';
+                button.classList.remove('hidden');
+                
+                // Update button styling
+                const parentButton = button.closest('button');
+                if (parentButton) {
+                    if (isFollowing) {
+                        parentButton.className = parentButton.className.replace('text-blue-500 hover:text-blue-600', 'text-green-500 hover:text-green-600');
+                    } else {
+                        parentButton.className = parentButton.className.replace('text-green-500 hover:text-green-600', 'text-blue-500 hover:text-blue-600');
+                    }
+                }
+            });
+            
+            loadingSpans.forEach(span => {
+                span.classList.add('hidden');
+            });
+        }
+
+        // Check if user is already following
+        async function checkFollowStatus(userId) {
+            if (!currentUser || currentUser.uid === userId) return false;
+            
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                const userData = userDoc.data();
+                const following = userData.following || [];
+                return following.includes(userId);
+            } catch (error) {
+                console.error('Error checking follow status:', error);
+                return false;
             }
         }
 
@@ -3067,17 +3680,61 @@
                 return;
             }
 
-            if (confirm('Are you sure you want to report this post?')) {
-                try {
-                    await db.collection('reports').add({
-                        postId,
-                        reportedBy: currentUser.uid,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    showNotification('Post reported successfully 🚨', 'success');
-                } catch (error) {
-                    showNotification('Error reporting post: ' + error.message, 'error');
+            const reason = prompt('Please specify the reason for reporting this post:\n\n1. Spam\n2. Harassment\n3. Inappropriate content\n4. False information\n5. Other\n\nEnter your reason:');
+            
+            if (!reason) return;
+
+            try {
+                // Get post data for the report
+                const postDoc = await db.collection('posts').doc(postId).get();
+                const postData = postDoc.data();
+                
+                // Get reporter data
+                const reporterDoc = await db.collection('users').doc(currentUser.uid).get();
+                const reporterData = reporterDoc.data();
+
+                await db.collection('reports').add({
+                    postId,
+                    postContent: postData?.content || '',
+                    postAuthor: postData?.authorName || 'Unknown',
+                    postAuthorId: postData?.authorId || '',
+                    reportedBy: currentUser.uid,
+                    reporterName: reporterData?.displayName || currentUser.email,
+                    reason: reason.trim(),
+                    status: 'pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    timestamp: Date.now()
+                });
+                
+                showNotification('Post reported successfully! Admins will review it 🚨', 'success');
+                
+                // Update admin inbox badge
+                updateAdminInboxBadge();
+                
+            } catch (error) {
+                console.error('Error reporting post:', error);
+                showNotification('Error reporting post: ' + error.message, 'error');
+            }
+        }
+
+        // Update admin inbox badge count
+        async function updateAdminInboxBadge() {
+            try {
+                const reportsSnapshot = await db.collection('reports')
+                    .where('status', '==', 'pending')
+                    .get();
+                
+                const badge = document.getElementById('inboxBadge');
+                const count = reportsSnapshot.size;
+                
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
                 }
+            } catch (error) {
+                console.error('Error updating inbox badge:', error);
             }
         }
 
@@ -3972,5 +4629,5 @@
             }
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9832c4b302599556',t:'MTc1ODU1NDIzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9832cdb131869556',t:'MTc1ODU1NDYwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
