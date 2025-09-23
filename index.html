@@ -405,12 +405,7 @@
                             </svg>
                             <span class="font-medium">Explore</span>
                         </button>
-                        <button onclick="showSection('messages')" class="nav-item flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-all duration-300">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                            </svg>
-                            <span class="font-medium">Messages</span>
-                        </button>
+
                         <button onclick="showSection('profile')" class="nav-item flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-all duration-300">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -420,6 +415,10 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <div id="connectionStatus" class="flex items-center space-x-2">
+                        <div id="connectionIndicator" class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span id="connectionText" class="text-sm text-gray-600 hidden md:block">Online</span>
+                    </div>
                     <span id="userDisplay" class="hidden font-medium text-gray-700 truncate max-w-32">Welcome!</span>
                     <button id="authBtn" onclick="toggleAuth()" class="btn-gradient text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition-all duration-300 transform hover:scale-105">Login</button>
                 </div>
@@ -449,12 +448,7 @@
                     </div>
                     <span class="text-xs mt-1">Post</span>
                 </button>
-                <button onclick="showSection('messages')" class="flex flex-col items-center p-2 text-gray-600 hover:text-gray-900 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                    </svg>
-                    <span class="text-xs mt-1">Messages</span>
-                </button>
+
                 <button onclick="showSection('profile')" class="flex flex-col items-center p-2 text-gray-600 hover:text-gray-900 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -635,26 +629,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Main Feed -->
                 <div class="lg:col-span-2">
-                    <!-- Stories Section -->
-                    <div class="glass-effect rounded-2xl p-6 mb-6 slide-in">
-                        <div class="flex space-x-4 overflow-x-auto pb-2">
-                            <div class="flex-shrink-0 text-center">
-                                <div class="story-gradient">
-                                    <div class="story-inner">
-                                        <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                                            <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p class="text-xs mt-2 text-gray-600">Your Story</p>
-                            </div>
-                            <div id="storiesContainer" class="flex space-x-4">
-                                <!-- Stories will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
+
 
                     <!-- Create Post -->
                     <div class="glass-effect rounded-2xl p-6 mb-6 slide-in">
@@ -754,23 +729,23 @@
                         <div class="mt-8">
                             <h3 class="text-lg font-semibold mb-4 text-gray-800">⚡ Quick Actions</h3>
                             <div class="space-y-2">
-                                <button onclick="createStory()" class="w-full text-left p-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg transition-all duration-300 flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                        <span class="text-white text-sm">📸</span>
-                                    </div>
-                                    <span class="font-medium text-gray-800">Create Story</span>
-                                </button>
-                                <button onclick="goLive()" class="w-full text-left p-3 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 rounded-lg transition-all duration-300 flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
-                                        <span class="text-white text-sm">🔴</span>
-                                    </div>
-                                    <span class="font-medium text-gray-800">Go Live</span>
-                                </button>
                                 <button onclick="createPoll()" class="w-full text-left p-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg transition-all duration-300 flex items-center space-x-3">
                                     <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
                                         <span class="text-white text-sm">📊</span>
                                     </div>
                                     <span class="font-medium text-gray-800">Create Poll</span>
+                                </button>
+                                <button onclick="refreshFeed()" class="w-full text-left p-3 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-lg transition-all duration-300 flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-sm">🔄</span>
+                                    </div>
+                                    <span class="font-medium text-gray-800">Refresh Feed</span>
+                                </button>
+                                <button onclick="showOnlineUsers()" class="w-full text-left p-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg transition-all duration-300 flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-sm">👥</span>
+                                    </div>
+                                    <span class="font-medium text-gray-800">Online Users</span>
                                 </button>
                             </div>
                         </div>
@@ -828,91 +803,7 @@
             </div>
         </div>
 
-        <!-- Messages Section -->
-        <div id="messagesSection" class="section hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-96">
-                <!-- Conversations List -->
-                <div class="lg:col-span-1 glass-effect rounded-2xl p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-gray-800">Messages</h3>
-                        <button onclick="startNewConversation()" class="text-blue-500 hover:text-blue-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="conversationsList" class="space-y-3 custom-scrollbar overflow-y-auto max-h-80">
-                        <!-- Conversations will be loaded here -->
-                    </div>
-                </div>
 
-                <!-- Chat Area -->
-                <div class="lg:col-span-2 glass-effect rounded-2xl flex flex-col">
-                    <div id="chatHeader" class="p-6 border-b border-gray-200 hidden">
-                        <div class="flex items-center space-x-3">
-                            <div class="relative">
-                                <div class="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-semibold">
-                                    <span id="chatUserAvatar">U</span>
-                                </div>
-                                <div class="w-3 h-3 bg-green-500 rounded-full border-2 border-white absolute -bottom-1 -right-1"></div>
-                            </div>
-                            <div>
-                                <h4 id="chatUserName" class="font-semibold text-gray-800">Select a conversation</h4>
-                                <p id="chatUserStatus" class="text-sm text-gray-500">Online</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="chatMessages" class="flex-1 p-6 custom-scrollbar overflow-y-auto">
-                        <div class="text-center text-gray-500 mt-20">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                            </svg>
-                            <p>Select a conversation to start messaging</p>
-                        </div>
-                    </div>
-                    
-                    <div id="chatInput" class="p-6 border-t border-gray-200 hidden">
-                        <form onsubmit="sendMessage(event)" class="space-y-3">
-                            <div class="flex items-center space-x-3">
-                                <button type="button" onclick="toggleEmojiPicker()" class="text-gray-500 hover:text-gray-700 transition-colors">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                </button>
-                                <input type="text" id="messageInput" placeholder="Type a message..." class="flex-1 p-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300">
-                                <button type="button" onclick="attachFile()" class="text-gray-500 hover:text-gray-700 transition-colors">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                                    </svg>
-                                </button>
-                                <button type="submit" class="btn-gradient text-white p-3 rounded-full hover:opacity-90 transition-all duration-300">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div id="emojiPicker" class="hidden bg-white border border-gray-200 rounded-lg p-4 shadow-lg">
-                                <div class="grid grid-cols-8 gap-2">
-                                    <button type="button" onclick="addEmoji('😀')" class="p-2 hover:bg-gray-100 rounded text-xl">😀</button>
-                                    <button type="button" onclick="addEmoji('😂')" class="p-2 hover:bg-gray-100 rounded text-xl">😂</button>
-                                    <button type="button" onclick="addEmoji('😍')" class="p-2 hover:bg-gray-100 rounded text-xl">😍</button>
-                                    <button type="button" onclick="addEmoji('🥰')" class="p-2 hover:bg-gray-100 rounded text-xl">🥰</button>
-                                    <button type="button" onclick="addEmoji('😎')" class="p-2 hover:bg-gray-100 rounded text-xl">😎</button>
-                                    <button type="button" onclick="addEmoji('🤔')" class="p-2 hover:bg-gray-100 rounded text-xl">🤔</button>
-                                    <button type="button" onclick="addEmoji('👍')" class="p-2 hover:bg-gray-100 rounded text-xl">👍</button>
-                                    <button type="button" onclick="addEmoji('❤️')" class="p-2 hover:bg-gray-100 rounded text-xl">❤️</button>
-                                    <button type="button" onclick="addEmoji('🎉')" class="p-2 hover:bg-gray-100 rounded text-xl">🎉</button>
-                                    <button type="button" onclick="addEmoji('🔥')" class="p-2 hover:bg-gray-100 rounded text-xl">🔥</button>
-                                    <button type="button" onclick="addEmoji('💯')" class="p-2 hover:bg-gray-100 rounded text-xl">💯</button>
-                                    <button type="button" onclick="addEmoji('✨')" class="p-2 hover:bg-gray-100 rounded text-xl">✨</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Profile Section -->
         <div id="profileSection" class="section hidden">
@@ -1056,12 +947,118 @@
                 this.modules = window.firebaseModules;
                 this.currentUser = null;
                 this.reports = [];
-                this.stories = [];
-                this.liveStreams = [];
                 this.polls = [];
+                this.isOnline = navigator.onLine;
+                this.retryAttempts = 0;
+                this.maxRetries = 3;
+                this.connectionListeners = [];
+                
+                // Initialize connectivity monitoring
+                this.initializeConnectivity();
                 
                 // Initialize auth listener
                 this.initializeAuth();
+            }
+
+            initializeConnectivity() {
+                // Monitor online/offline status
+                window.addEventListener('online', () => {
+                    this.isOnline = true;
+                    this.retryAttempts = 0;
+                    updateConnectionStatus(true);
+                    showNotification('🟢 Connection restored! Syncing data...', 'success');
+                    this.syncOfflineData();
+                });
+
+                window.addEventListener('offline', () => {
+                    this.isOnline = false;
+                    updateConnectionStatus(false);
+                    showNotification('🔴 Connection lost! Working offline...', 'warning');
+                });
+
+                // Initial status
+                updateConnectionStatus(this.isOnline);
+
+                // Check connection periodically
+                setInterval(() => {
+                    this.checkConnection();
+                }, 30000);
+            }
+
+            async checkConnection() {
+                if (!this.isOnline) return;
+                
+                try {
+                    // Try to fetch a small document to test connection
+                    await fetch('https://www.google.com/favicon.ico', { 
+                        mode: 'no-cors',
+                        cache: 'no-cache'
+                    });
+                    
+                    if (!this.isOnline) {
+                        this.isOnline = true;
+                        showNotification('🟢 Connection restored!', 'success');
+                    }
+                } catch (error) {
+                    if (this.isOnline) {
+                        this.isOnline = false;
+                        showNotification('🔴 Connection issues detected...', 'warning');
+                    }
+                }
+            }
+
+            async syncOfflineData() {
+                // Sync any offline data when connection is restored
+                const offlineData = this.getOfflineData();
+                if (offlineData.length > 0) {
+                    showNotification('📤 Syncing offline changes...', 'info');
+                    
+                    for (const item of offlineData) {
+                        try {
+                            await this.processOfflineItem(item);
+                        } catch (error) {
+                            console.error('Error syncing offline item:', error);
+                        }
+                    }
+                    
+                    this.clearOfflineData();
+                    showNotification('✅ All changes synced successfully!', 'success');
+                }
+            }
+
+            getOfflineData() {
+                try {
+                    return JSON.parse(localStorage.getItem('hategram_offline_data') || '[]');
+                } catch {
+                    return [];
+                }
+            }
+
+            saveOfflineData(data) {
+                try {
+                    const existing = this.getOfflineData();
+                    existing.push({ ...data, timestamp: Date.now() });
+                    localStorage.setItem('hategram_offline_data', JSON.stringify(existing));
+                } catch (error) {
+                    console.error('Error saving offline data:', error);
+                }
+            }
+
+            clearOfflineData() {
+                localStorage.removeItem('hategram_offline_data');
+            }
+
+            async processOfflineItem(item) {
+                switch (item.type) {
+                    case 'post':
+                        return await this.createPost(item.data);
+                    case 'message':
+                        return await this.sendMessage(item.conversationId, item.senderId, item.content);
+                    case 'like':
+                        return await this.toggleLike(item.postId, item.userId);
+                    default:
+                        console.warn('Unknown offline item type:', item.type);
+                }
             }
 
             async initializeAuth() {
@@ -1176,9 +1173,44 @@
                 }
             }
 
-            // Post methods
+            // Enhanced method with retry logic
+            async executeWithRetry(operation, operationName = 'operation') {
+                for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+                    try {
+                        if (!this.isOnline && attempt === 1) {
+                            throw new Error('No internet connection');
+                        }
+                        
+                        const result = await operation();
+                        
+                        // Reset retry count on success
+                        this.retryAttempts = 0;
+                        return result;
+                        
+                    } catch (error) {
+                        console.error(`${operationName} attempt ${attempt} failed:`, error);
+                        
+                        if (attempt === this.maxRetries) {
+                            // If all retries failed and we're offline, save for later
+                            if (!this.isOnline) {
+                                showNotification(`📱 ${operationName} saved offline. Will sync when connected!`, 'info');
+                                return null;
+                            }
+                            throw error;
+                        }
+                        
+                        // Wait before retry (exponential backoff)
+                        const delay = Math.pow(2, attempt - 1) * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        
+                        showNotification(`🔄 Retrying ${operationName}... (${attempt}/${this.maxRetries})`, 'warning');
+                    }
+                }
+            }
+
+            // Post methods with enhanced connectivity
             async createPost(postData) {
-                try {
+                const operation = async () => {
                     const post = {
                         ...postData,
                         id: 'post_' + Date.now(),
@@ -1191,22 +1223,60 @@
                     
                     await this.modules.addDoc(this.modules.collection(this.db, 'posts'), post);
                     return post;
+                };
+
+                try {
+                    return await this.executeWithRetry(operation, 'Create Post');
                 } catch (error) {
-                    console.error('Error creating post:', error);
+                    // Save offline if connection failed
+                    if (!this.isOnline) {
+                        this.saveOfflineData({
+                            type: 'post',
+                            data: postData
+                        });
+                        return { ...postData, id: 'offline_' + Date.now(), offline: true };
+                    }
                     throw error;
                 }
             }
 
             async getPosts(limit = 20) {
-                try {
+                const operation = async () => {
                     const postsQuery = this.modules.query(
                         this.modules.collection(this.db, 'posts'),
                         this.modules.orderBy('timestamp', 'desc')
                     );
                     const querySnapshot = await this.modules.getDocs(postsQuery);
                     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).slice(0, limit);
+                };
+
+                try {
+                    const posts = await this.executeWithRetry(operation, 'Load Posts');
+                    
+                    // Cache posts for offline use
+                    if (posts && posts.length > 0) {
+                        localStorage.setItem('hategram_cached_posts', JSON.stringify(posts));
+                    }
+                    
+                    return posts || [];
                 } catch (error) {
                     console.error('Error getting posts:', error);
+                    
+                    // Return cached posts if available
+                    const cachedPosts = this.getCachedPosts();
+                    if (cachedPosts.length > 0) {
+                        showNotification('📱 Showing cached posts (offline mode)', 'info');
+                        return cachedPosts;
+                    }
+                    
+                    return [];
+                }
+            }
+
+            getCachedPosts() {
+                try {
+                    return JSON.parse(localStorage.getItem('hategram_cached_posts') || '[]');
+                } catch {
                     return [];
                 }
             }
@@ -1250,61 +1320,7 @@
                 }
             }
 
-            // Story methods
-            async createStory(storyData) {
-                try {
-                    const story = {
-                        ...storyData,
-                        id: 'story_' + Date.now(),
-                        createdAt: new Date(),
-                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-                        views: []
-                    };
-                    
-                    await this.modules.addDoc(this.modules.collection(this.db, 'stories'), story);
-                    return story;
-                } catch (error) {
-                    console.error('Error creating story:', error);
-                    throw error;
-                }
-            }
 
-            async getActiveStories() {
-                try {
-                    const now = new Date();
-                    const storiesQuery = this.modules.query(
-                        this.modules.collection(this.db, 'stories'),
-                        this.modules.where('expiresAt', '>', now),
-                        this.modules.orderBy('expiresAt', 'desc')
-                    );
-                    const querySnapshot = await this.modules.getDocs(storiesQuery);
-                    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                } catch (error) {
-                    console.error('Error getting stories:', error);
-                    return [];
-                }
-            }
-
-            // Live stream methods
-            async startLiveStream(streamData) {
-                try {
-                    const stream = {
-                        ...streamData,
-                        id: 'live_' + Date.now(),
-                        isLive: true,
-                        viewers: [],
-                        startedAt: new Date(),
-                        authorId: this.currentUser.uid,
-                        authorName: this.currentUser.displayName
-                    };
-                    
-                    await this.modules.addDoc(this.modules.collection(this.db, 'liveStreams'), stream);
-                    return stream;
-                } catch (error) {
-                    console.error('Error starting live stream:', error);
-                    throw error;
-                }
-            }
 
             // Poll methods
             async createPoll(pollData) {
@@ -2060,10 +2076,15 @@
         async function loadPosts() {
             const postsContainer = document.getElementById('postsContainer');
             
+            // Show enhanced loading state
             postsContainer.innerHTML = `
-                <div class="flex justify-center items-center py-8">
-                    <div class="loading-spinner"></div>
-                    <span class="ml-2 text-gray-600">Loading posts...</span>
+                <div class="flex flex-col justify-center items-center py-12">
+                    <div class="loading-spinner-large mb-4"></div>
+                    <span class="text-gray-600 font-medium">Loading posts...</span>
+                    <div class="flex items-center mt-2">
+                        <div id="connectionIndicatorLoad" class="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
+                        <span class="text-sm text-gray-500">Connected to Firebase</span>
+                    </div>
                 </div>
             `;
 
@@ -2085,20 +2106,43 @@
                     return;
                 }
 
-                posts.forEach(post => {
-                    const element = createPostElement(post);
-                    postsContainer.appendChild(element);
+                // Add posts with staggered animation
+                posts.forEach((post, index) => {
+                    setTimeout(() => {
+                        const element = createPostElement(post);
+                        element.style.opacity = '0';
+                        element.style.transform = 'translateY(20px)';
+                        postsContainer.appendChild(element);
+                        
+                        // Animate in
+                        setTimeout(() => {
+                            element.style.transition = 'all 0.5s ease';
+                            element.style.opacity = '1';
+                            element.style.transform = 'translateY(0)';
+                        }, 50);
+                    }, index * 100);
                 });
+
+                // Show success message
+                setTimeout(() => {
+                    showNotification(`✅ Loaded ${posts.length} posts successfully!`, 'success');
+                }, posts.length * 100 + 500);
+
             } catch (error) {
                 console.error('Error loading posts:', error);
                 postsContainer.innerHTML = `
                     <div class="text-center py-12">
                         <div class="text-4xl mb-3">❌</div>
                         <h3 class="text-xl font-bold text-gray-800 mb-2">Failed to load posts</h3>
-                        <p class="text-gray-600 mb-4">Please try refreshing the page</p>
-                        <button onclick="loadPosts()" class="btn-gradient text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition-all duration-300">
-                            Try Again
-                        </button>
+                        <p class="text-gray-600 mb-4">Check your connection and try again</p>
+                        <div class="flex justify-center space-x-3">
+                            <button onclick="loadPosts()" class="btn-gradient text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition-all duration-300">
+                                Try Again
+                            </button>
+                            <button onclick="refreshFeed()" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition-all duration-300">
+                                Refresh Feed
+                            </button>
+                        </div>
                     </div>
                 `;
             }
@@ -2771,117 +2815,58 @@
             `).join('');
         }
 
+        // Connection status management
+        function updateConnectionStatus(isOnline) {
+            const indicator = document.getElementById('connectionIndicator');
+            const text = document.getElementById('connectionText');
+            
+            if (isOnline) {
+                indicator.className = 'w-3 h-3 bg-green-500 rounded-full animate-pulse';
+                text.textContent = 'Online';
+                text.className = 'text-sm text-green-600 hidden md:block';
+            } else {
+                indicator.className = 'w-3 h-3 bg-red-500 rounded-full';
+                text.textContent = 'Offline';
+                text.className = 'text-sm text-red-600 hidden md:block';
+            }
+        }
+
+        // Enhanced refresh function
+        async function refreshFeed() {
+            showNotification('🔄 Refreshing feed...', 'info');
+            
+            try {
+                await loadPosts();
+                await loadSuggestedUsers();
+                showNotification('✅ Feed refreshed successfully!', 'success');
+            } catch (error) {
+                console.error('Error refreshing feed:', error);
+                showNotification('❌ Failed to refresh feed', 'error');
+            }
+        }
+
+        // Show online users
+        function showOnlineUsers() {
+            const users = Object.values(db?.data?.users || {}).filter(user => 
+                user.lastActive && (Date.now() - new Date(user.lastActive).getTime()) < 300000 // 5 minutes
+            );
+            
+            if (users.length === 0) {
+                showNotification('👥 No users currently online', 'info');
+                return;
+            }
+            
+            const userNames = users.slice(0, 5).map(user => user.displayName).join(', ');
+            showNotification(`👥 Online users: ${userNames}${users.length > 5 ? ` and ${users.length - 5} more` : ''}`, 'info');
+        }
+
         // New feature functions
         function togglePostOptions() {
             const options = document.getElementById('postOptions');
             options.classList.toggle('hidden');
         }
 
-        function createStory() {
-            if (!currentUser) {
-                showNotification('Please login to create stories! 🔐', 'error');
-                toggleAuth();
-                return;
-            }
-            document.getElementById('storyModal').classList.remove('hidden');
-        }
 
-        function closeStoryModal() {
-            document.getElementById('storyModal').classList.add('hidden');
-            document.getElementById('storyForm').reset();
-            document.getElementById('storyUploadPrompt').classList.remove('hidden');
-            document.getElementById('storyImagePreview').classList.add('hidden');
-        }
-
-        async function createStoryPost(event) {
-            event.preventDefault();
-            if (!currentUser) {
-                showNotification('Please login first! 🔐', 'error');
-                return;
-            }
-
-            const text = document.getElementById('storyText').value;
-            const imageFile = document.getElementById('storyImage').files[0];
-
-            if (!text.trim() && !imageFile) {
-                showNotification('Please add some content to your story! 📝', 'warning');
-                return;
-            }
-
-            try {
-                let imageUrl = null;
-                if (imageFile) {
-                    const imagePath = `stories/${currentUser.uid}/${Date.now()}_${imageFile.name}`;
-                    imageUrl = await firebaseDB.uploadFile(imageFile, imagePath);
-                }
-
-                const storyData = {
-                    text: text.trim(),
-                    imageUrl,
-                    authorId: currentUser.uid,
-                    authorName: currentUser.displayName
-                };
-
-                await firebaseDB.createStory(storyData);
-                closeStoryModal();
-                showNotification('Story shared successfully! 📸✨', 'success');
-                loadStories();
-            } catch (error) {
-                console.error('Error creating story:', error);
-                showNotification('Failed to create story. Please try again! ❌', 'error');
-            }
-        }
-
-        function goLive() {
-            if (!currentUser) {
-                showNotification('Please login to go live! 🔐', 'error');
-                toggleAuth();
-                return;
-            }
-            document.getElementById('liveModal').classList.remove('hidden');
-        }
-
-        function closeLiveModal() {
-            document.getElementById('liveModal').classList.add('hidden');
-            document.getElementById('liveForm').reset();
-        }
-
-        async function startLiveStream(event) {
-            event.preventDefault();
-            if (!currentUser) {
-                showNotification('Please login first! 🔐', 'error');
-                return;
-            }
-
-            const title = document.getElementById('liveTitle').value;
-            const description = document.getElementById('liveDescription').value;
-            const privacy = document.getElementById('livePrivacy').value;
-
-            if (!title.trim()) {
-                showNotification('Please add a title for your stream! 📝', 'warning');
-                return;
-            }
-
-            try {
-                const streamData = {
-                    title: title.trim(),
-                    description: description.trim(),
-                    privacy
-                };
-
-                await firebaseDB.startLiveStream(streamData);
-                closeLiveModal();
-                showNotification('🔴 Live stream started! You\'re now broadcasting!', 'success');
-                
-                // Simulate live stream interface
-                setTimeout(() => {
-                    showNotification('📺 Live stream ended! Thanks for broadcasting!', 'info');
-                }, 30000);
-            } catch (error) {
-                console.error('Error starting live stream:', error);
-                showNotification('Failed to start live stream. Please try again! ❌', 'error');
-            }
-        }
 
         function createPoll() {
             if (!currentUser) {
@@ -3252,35 +3237,13 @@
             return post;
         }
 
-        // Load stories function
-        async function loadStories() {
-            try {
-                const stories = await firebaseDB.getActiveStories();
-                const storiesContainer = document.getElementById('storiesContainer');
-                
-                storiesContainer.innerHTML = stories.map(story => `
-                    <div class="flex-shrink-0 text-center cursor-pointer hover:scale-105 transition-transform">
-                        <div class="story-gradient">
-                            <div class="story-inner">
-                                <div class="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold">
-                                    ${story.authorName.charAt(0).toUpperCase()}
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-xs mt-2 text-gray-600 truncate max-w-[70px]">${story.authorName}</p>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error loading stories:', error);
-            }
-        }
+
 
         // Initialize popular posts when explore section is shown
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(loadPopularPosts, 2000);
             setTimeout(simulateLiveActivity, 3000);
-            setTimeout(loadStories, 1000);
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'983afbd392a86341',t:'MTc1ODY0MDM4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'983ce846f4503052',t:'MTc1ODY2MDU1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
