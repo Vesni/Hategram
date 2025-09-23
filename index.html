@@ -373,10 +373,6 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div id="connectionStatus" class="hidden md:flex items-center space-x-2">
-                        <div class="online-indicator"></div>
-                        <span class="text-sm text-gray-600">Online</span>
-                    </div>
                     <span id="userDisplay" class="hidden font-medium text-gray-700 truncate max-w-32">Welcome!</span>
                     <button id="authBtn" onclick="toggleAuth()" class="btn-gradient text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition-all duration-300 transform hover:scale-105">Login</button>
                 </div>
@@ -502,7 +498,22 @@
                             
                             <div class="flex justify-between items-center">
                                 <div class="flex items-center space-x-4">
-                                    <span class="text-sm text-gray-500">Share your moment</span>
+                                    <button type="button" onclick="togglePostOptions()" class="flex items-center space-x-2 text-gray-500 hover:text-gray-700 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                                        </svg>
+                                        <span class="text-sm">Options</span>
+                                    </button>
+                                    <div id="postOptions" class="hidden flex items-center space-x-3">
+                                        <label class="flex items-center space-x-2 cursor-pointer">
+                                            <input type="checkbox" id="allowComments" checked class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+                                            <span class="text-sm text-gray-600">Comments</span>
+                                        </label>
+                                        <label class="flex items-center space-x-2 cursor-pointer">
+                                            <input type="checkbox" id="allowSharing" checked class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+                                            <span class="text-sm text-gray-600">Sharing</span>
+                                        </label>
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn-gradient text-white px-8 py-3 rounded-full font-semibold hover:opacity-90 transition-all duration-300 transform hover:scale-105">Share</button>
                             </div>
@@ -527,18 +538,51 @@
                         <div class="mt-8">
                             <h3 class="text-lg font-semibold mb-4 text-gray-800">🔥 Trending</h3>
                             <div class="space-y-2">
-                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105">
                                     <span class="font-medium text-gray-800">#hategram</span>
                                     <span class="text-sm text-gray-500">1.2k posts</span>
                                 </div>
-                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105">
                                     <span class="font-medium text-gray-800">#photography</span>
                                     <span class="text-sm text-gray-500">856 posts</span>
                                 </div>
-                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105">
                                     <span class="font-medium text-gray-800">#lifestyle</span>
                                     <span class="text-sm text-gray-500">642 posts</span>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Live Activity Feed -->
+                        <div class="mt-8">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-800">⚡ Live Activity</h3>
+                            <div id="liveActivity" class="space-y-3 max-h-48 overflow-y-auto custom-scrollbar">
+                                <!-- Live activities will appear here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="mt-8">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-800">⚡ Quick Actions</h3>
+                            <div class="space-y-2">
+                                <button onclick="createStory()" class="w-full text-left p-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg transition-all duration-300 flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-sm">📸</span>
+                                    </div>
+                                    <span class="font-medium text-gray-800">Create Story</span>
+                                </button>
+                                <button onclick="goLive()" class="w-full text-left p-3 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 rounded-lg transition-all duration-300 flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-sm">🔴</span>
+                                    </div>
+                                    <span class="font-medium text-gray-800">Go Live</span>
+                                </button>
+                                <button onclick="createPoll()" class="w-full text-left p-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg transition-all duration-300 flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-sm">📊</span>
+                                    </div>
+                                    <span class="font-medium text-gray-800">Create Poll</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -621,7 +665,7 @@
                                 <div class="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-semibold">
                                     <span id="chatUserAvatar">U</span>
                                 </div>
-                                <div class="online-indicator"></div>
+                                <div class="w-3 h-3 bg-green-500 rounded-full border-2 border-white absolute -bottom-1 -right-1"></div>
                             </div>
                             <div>
                                 <h4 id="chatUserName" class="font-semibold text-gray-800">Select a conversation</h4>
@@ -640,13 +684,41 @@
                     </div>
                     
                     <div id="chatInput" class="p-6 border-t border-gray-200 hidden">
-                        <form onsubmit="sendMessage(event)" class="flex items-center space-x-3">
-                            <input type="text" id="messageInput" placeholder="Type a message..." class="flex-1 p-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300">
-                            <button type="submit" class="btn-gradient text-white p-3 rounded-full hover:opacity-90 transition-all duration-300">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                                </svg>
-                            </button>
+                        <form onsubmit="sendMessage(event)" class="space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <button type="button" onclick="toggleEmojiPicker()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </button>
+                                <input type="text" id="messageInput" placeholder="Type a message..." class="flex-1 p-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300">
+                                <button type="button" onclick="attachFile()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                    </svg>
+                                </button>
+                                <button type="submit" class="btn-gradient text-white p-3 rounded-full hover:opacity-90 transition-all duration-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div id="emojiPicker" class="hidden bg-white border border-gray-200 rounded-lg p-4 shadow-lg">
+                                <div class="grid grid-cols-8 gap-2">
+                                    <button type="button" onclick="addEmoji('😀')" class="p-2 hover:bg-gray-100 rounded text-xl">😀</button>
+                                    <button type="button" onclick="addEmoji('😂')" class="p-2 hover:bg-gray-100 rounded text-xl">😂</button>
+                                    <button type="button" onclick="addEmoji('😍')" class="p-2 hover:bg-gray-100 rounded text-xl">😍</button>
+                                    <button type="button" onclick="addEmoji('🥰')" class="p-2 hover:bg-gray-100 rounded text-xl">🥰</button>
+                                    <button type="button" onclick="addEmoji('😎')" class="p-2 hover:bg-gray-100 rounded text-xl">😎</button>
+                                    <button type="button" onclick="addEmoji('🤔')" class="p-2 hover:bg-gray-100 rounded text-xl">🤔</button>
+                                    <button type="button" onclick="addEmoji('👍')" class="p-2 hover:bg-gray-100 rounded text-xl">👍</button>
+                                    <button type="button" onclick="addEmoji('❤️')" class="p-2 hover:bg-gray-100 rounded text-xl">❤️</button>
+                                    <button type="button" onclick="addEmoji('🎉')" class="p-2 hover:bg-gray-100 rounded text-xl">🎉</button>
+                                    <button type="button" onclick="addEmoji('🔥')" class="p-2 hover:bg-gray-100 rounded text-xl">🔥</button>
+                                    <button type="button" onclick="addEmoji('💯')" class="p-2 hover:bg-gray-100 rounded text-xl">💯</button>
+                                    <button type="button" onclick="addEmoji('✨')" class="p-2 hover:bg-gray-100 rounded text-xl">✨</button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -669,8 +741,8 @@
                         <div class="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
                             <h2 id="profileName" class="text-3xl font-bold text-gray-800 flex items-center">
                                 User Profile
-                                <span id="profileVerificationBadge" class="hidden ml-3 verified-badge text-2xl" title="Verified">✓</span>
-                                <span id="profileAdminBadge" class="hidden ml-3 admin-crown text-2xl" title="Admin">👑</span>
+                                <span id="profileVerificationBadge" class="hidden ml-2 text-blue-500 text-2xl" title="Verified">✓</span>
+                                <span id="profileAdminBadge" class="hidden ml-2 text-yellow-500 text-2xl" title="Admin">👑</span>
                             </h2>
                             <div class="flex space-x-2 mt-2 md:mt-0">
                                 <button onclick="editProfile()" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-300 transition-colors">Edit Profile</button>
@@ -1128,7 +1200,7 @@
             
             // Show welcome notification
             setTimeout(() => {
-                showNotification('Welcome to HateGram! 🎉 Everything works offline!', 'success');
+                showNotification('Welcome to HateGram! 🎉 The ultimate social experience!', 'success');
             }, 1000);
         });
 
@@ -1451,7 +1523,10 @@
                             </div>
                         </div>
                         <div>
-                            <p class="font-semibold text-gray-800">${post.authorName}</p>
+                            <p class="font-semibold text-gray-800 flex items-center">
+                                ${post.authorName}
+                                ${db.getUser(post.authorId)?.isVerified ? '<span class="ml-1 text-blue-500" title="Verified">✓</span>' : ''}
+                            </p>
                             <p class="text-sm text-gray-500">${dateString}</p>
                         </div>
                     </div>
@@ -1605,7 +1680,10 @@
                             <div class="online-indicator"></div>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="font-medium text-gray-800 truncate">${otherUser?.displayName || 'Unknown User'}</p>
+                            <p class="font-medium text-gray-800 truncate flex items-center">
+                                ${otherUser?.displayName || 'Unknown User'}
+                                ${otherUser?.isVerified ? '<span class="ml-1 text-blue-500 text-sm" title="Verified">✓</span>' : ''}
+                            </p>
                             <p class="text-sm text-gray-500 truncate">${lastMessage ? lastMessage.content : 'No messages yet'}</p>
                         </div>
                         <div class="text-xs text-gray-400">
@@ -1824,7 +1902,10 @@
                             ${(user.displayName || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div>
-                            <p class="font-medium text-gray-800">${user.displayName || 'Unknown User'}</p>
+                            <p class="font-medium text-gray-800 flex items-center">
+                                ${user.displayName || 'Unknown User'}
+                                ${user.isVerified ? '<span class="ml-1 text-blue-500 text-sm" title="Verified">✓</span>' : ''}
+                            </p>
                             <p class="text-sm text-gray-500">@${user.username || 'user'}</p>
                         </div>
                     </div>
@@ -1922,7 +2003,10 @@
                                             ${(user.displayName || 'U').charAt(0).toUpperCase()}
                                         </div>
                                         <div class="flex-1">
-                                            <h5 class="font-semibold text-gray-800">${user.displayName || 'Unknown User'}</h5>
+                                            <h5 class="font-semibold text-gray-800 flex items-center">
+                                                ${user.displayName || 'Unknown User'}
+                                                ${user.isVerified ? '<span class="ml-1 text-blue-500 text-sm" title="Verified">✓</span>' : ''}
+                                            </h5>
                                             <p class="text-sm text-gray-500">@${user.username || 'user'}</p>
                                         </div>
                                         ${currentUser && user.uid !== currentUser.uid ? `
@@ -2059,10 +2143,100 @@
             `).join('');
         }
 
+        // New feature functions
+        function togglePostOptions() {
+            const options = document.getElementById('postOptions');
+            options.classList.toggle('hidden');
+        }
+
+        function createStory() {
+            showNotification('📸 Story creation coming soon! Share your moments in style!', 'info');
+        }
+
+        function goLive() {
+            showNotification('🔴 Live streaming feature coming soon! Go live with your audience!', 'info');
+        }
+
+        function createPoll() {
+            showNotification('📊 Poll creation coming soon! Get opinions from your followers!', 'info');
+        }
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            picker.classList.toggle('hidden');
+        }
+
+        function addEmoji(emoji) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value += emoji;
+            messageInput.focus();
+        }
+
+        function attachFile() {
+            showNotification('📎 File attachment coming soon! Share photos, videos, and documents!', 'info');
+        }
+
+        // Live activity simulation
+        function simulateLiveActivity() {
+            const activities = [
+                '👤 John liked your post',
+                '💬 Sarah commented on your photo',
+                '👥 Mike started following you',
+                '❤️ Emma loved your story',
+                '🔄 Alex shared your post',
+                '📸 Lisa posted a new photo',
+                '🎉 David celebrated your milestone'
+            ];
+
+            const liveActivity = document.getElementById('liveActivity');
+            if (!liveActivity) return;
+
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            const activityElement = document.createElement('div');
+            activityElement.className = 'flex items-center space-x-3 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg fade-in';
+            activityElement.innerHTML = `
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="text-sm text-gray-700">${activity}</span>
+                <span class="text-xs text-gray-500 ml-auto">now</span>
+            `;
+
+            liveActivity.insertBefore(activityElement, liveActivity.firstChild);
+
+            // Keep only last 5 activities
+            while (liveActivity.children.length > 5) {
+                liveActivity.removeChild(liveActivity.lastChild);
+            }
+        }
+
+        // Start live activity simulation
+        setInterval(simulateLiveActivity, 8000);
+
+        // Enhanced post creation with options
+        function createPostWithOptions(content, imageUrl) {
+            const allowComments = document.getElementById('allowComments').checked;
+            const allowSharing = document.getElementById('allowSharing').checked;
+            
+            const tagsText = document.getElementById('postTags').value;
+            const hashtags = tagsText.match(/#\w+/g) || [];
+
+            const post = db.createPost({
+                content: content.trim(),
+                imageUrl,
+                tags: hashtags,
+                authorId: currentUser.uid,
+                authorName: currentUser.displayName || currentUser.email,
+                allowComments,
+                allowSharing
+            });
+
+            return post;
+        }
+
         // Initialize popular posts when explore section is shown
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(loadPopularPosts, 2000);
+            setTimeout(simulateLiveActivity, 3000);
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'983acf7e56b2776f',t:'MTc1ODYzODU2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'983ae53f84933693',t:'MTc1ODYzOTQ1Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
