@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hategram</title><!-- Firebase SDK -->
+  <title>Hategram Social</title><!-- Firebase SDK -->
   <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -1305,7 +1305,7 @@
       </div>
      </div>
     </header><!-- Navigation Tabs -->
-    <nav class="nav-tabs"><button class="nav-tab active" data-tab="feed">📱 Feed</button> <button class="nav-tab" data-tab="chat">💬 Chat</button> <button id="admin-tab" class="nav-tab" data-tab="admin" style="display: none;">⚙️ Admin</button>
+    <nav class="nav-tabs"><button class="nav-tab active" data-tab="feed">📱 Feed</button> <button class="nav-tab" data-tab="chat">💬 Chat</button> <button class="nav-tab" data-tab="admin" style="display: none;">⚙️ Admin</button>
     </nav><!-- Feed Tab -->
     <div id="feed-tab" class="tab-content active"><!-- Welcome Message -->
      <div class="welcome-message">
@@ -1503,13 +1503,13 @@
         function checkAdminStatus() {
             if (currentUser && currentUser.email === ADMIN_EMAIL) {
                 isAdmin = true;
-                const adminTab = document.getElementById('admin-tab');
+                const adminTab = document.querySelector('[data-tab="admin"]');
                 if (adminTab) {
                     adminTab.style.display = 'block';
                 }
             } else {
                 isAdmin = false;
-                const adminTab = document.getElementById('admin-tab');
+                const adminTab = document.querySelector('[data-tab="admin"]');
                 if (adminTab) {
                     adminTab.style.display = 'none';
                 }
@@ -2425,5 +2425,5 @@
             });
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'990f982816edef1b',t:'MTc2MDg2OTc2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'990fa18ec72aef1b',t:'MTc2MDg3MDE1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
