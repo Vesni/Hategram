@@ -3,8 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hategram Social</title>
-  <script src="/_sdk/element_sdk.js"></script><!-- Firebase SDK -->
+  <title>Hategram Social</title><!-- Firebase SDK -->
   <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -1285,6 +1284,7 @@
     </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
   <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
  </head>
  <body>
@@ -1467,65 +1467,12 @@
         let messagesListener = null;
         let isAdmin = false;
 
-        // Default configuration with your admin email
-        const defaultConfig = {
-            app_title: "📸 Hategram Social",
-            welcome_message: "Share your moments and connect with friends! 🌟",
-            admin_email: "vesni277@gmail.com"
-        };
-
-        // Element SDK functions
-        function render(config) {
-            const appTitle = document.getElementById('app-title');
-            const welcomeMessage = document.getElementById('welcome-message');
-            
-            if (appTitle) {
-                appTitle.textContent = config.app_title || defaultConfig.app_title;
-            }
-            if (welcomeMessage) {
-                welcomeMessage.textContent = config.welcome_message || defaultConfig.welcome_message;
-            }
-
-            // Check if current user is admin
-            if (currentUser && config.admin_email) {
-                isAdmin = currentUser.email === config.admin_email;
-                const adminTab = document.getElementById('admin-tab');
-                if (adminTab) {
-                    adminTab.style.display = isAdmin ? 'block' : 'none';
-                }
-            }
-        }
-
-        function mapToCapabilities(config) {
-            return {
-                recolorables: [],
-                borderables: [],
-                fontEditable: undefined,
-                fontSizeable: undefined
-            };
-        }
-
-        function mapToEditPanelValues(config) {
-            return new Map([
-                ["app_title", config.app_title || defaultConfig.app_title],
-                ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
-                ["admin_email", config.admin_email || defaultConfig.admin_email]
-            ]);
-        }
+        // Admin email configuration
+        const ADMIN_EMAIL = "vesni277@gmail.com";
 
         // Initialize app
         window.initializeApp = async function() {
             try {
-                // Initialize Element SDK
-                if (window.elementSdk) {
-                    await window.elementSdk.init({
-                        defaultConfig,
-                        render,
-                        mapToCapabilities,
-                        mapToEditPanelValues
-                    });
-                }
-
                 // Set up authentication listener
                 window.firebaseServices.onAuthStateChanged(window.firebaseAuth, async (user) => {
                     if (user) {
@@ -1536,8 +1483,7 @@
                         updateUserOnlineStatus(true);
                         
                         // Check admin status after user loads
-                        const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
-                        render(config);
+                        checkAdminStatus();
                     } else {
                         currentUser = null;
                         currentUserProfile = null;
@@ -1552,6 +1498,23 @@
                 showNotification("Failed to initialize app", "error");
             }
         };
+
+        // Check if current user is admin
+        function checkAdminStatus() {
+            if (currentUser && currentUser.email === ADMIN_EMAIL) {
+                isAdmin = true;
+                const adminTab = document.getElementById('admin-tab');
+                if (adminTab) {
+                    adminTab.style.display = 'block';
+                }
+            } else {
+                isAdmin = false;
+                const adminTab = document.getElementById('admin-tab');
+                if (adminTab) {
+                    adminTab.style.display = 'none';
+                }
+            }
+        }
 
         // User Profile Management
         async function loadUserProfile() {
@@ -2462,5 +2425,5 @@
             });
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'990f93eb925def1b',t:'MTc2MDg2OTU5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'990f982816edef1b',t:'MTc2MDg2OTc2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
