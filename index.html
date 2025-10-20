@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hategram Social</title>
+  <title>Hategram</title>
   <style>
         body {
             box-sizing: border-box;
@@ -1903,10 +1903,23 @@
         // Initialize app
         window.initializeApp = async function() {
             try {
-                // Set up authentication listener
+                console.log('Initializing Hategram Social...');
+                console.log('Firebase Auth:', !!window.firebaseAuth);
+                console.log('Firebase DB:', !!window.firebaseDb);
+                console.log('Firebase Services:', !!window.firebaseServices);
+                
+                // Add authentication state debugging
                 window.firebaseServices.onAuthStateChanged(window.firebaseAuth, async (user) => {
+                    console.log('Auth state changed:', user ? `Signed in as ${user.email}` : 'Signed out');
+                    
                     if (user) {
                         currentUser = user;
+                        console.log('User details:', {
+                            uid: user.uid,
+                            email: user.email,
+                            displayName: user.displayName,
+                            emailVerified: user.emailVerified
+                        });
                         
                         // Check if email is verified
                         if (!user.emailVerified) {
@@ -1924,6 +1937,7 @@
                         // Show update modal for new users or if not dismissed
                         showUpdateModalIfNeeded();
                     } else {
+                        console.log('User signed out or not authenticated');
                         currentUser = null;
                         currentUserProfile = null;
                         isAdmin = false;
@@ -1932,6 +1946,7 @@
                     }
                 });
 
+                console.log('App initialization complete');
             } catch (error) {
                 console.error("Initialization error:", error);
                 showNotification("Failed to initialize app. Please refresh the page.", "error");
@@ -2143,11 +2158,43 @@
 
         // Authentication functions
         async function signInWithGoogle() {
+            const signInBtn = document.getElementById('google-signin-btn');
+            
             try {
+                // Show loading state
+                signInBtn.disabled = true;
+                signInBtn.innerHTML = '<span>⏳</span> Signing in...';
+                
+                // Configure Google Auth Provider with additional settings
+                window.firebaseProvider.addScope('email');
+                window.firebaseProvider.addScope('profile');
+                window.firebaseProvider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+                
+                console.log('Attempting Google sign-in...');
                 const result = await window.firebaseServices.signInWithPopup(window.firebaseAuth, window.firebaseProvider);
+                
+                console.log('Sign-in successful:', result.user.email);
                 showNotification(`Welcome, ${result.user.displayName}! 🎉`, "success");
+                
             } catch (error) {
-                handleFirebaseError(error, 'sign in');
+                console.error('Sign-in error:', error);
+                
+                // Reset button state
+                signInBtn.disabled = false;
+                signInBtn.innerHTML = '<span>🔐</span> Sign in with Google';
+                
+                // Handle specific error cases
+                if (error.code === 'auth/popup-closed-by-user') {
+                    showNotification("Sign-in cancelled. Please try again.", "warning");
+                } else if (error.code === 'auth/popup-blocked') {
+                    showNotification("Popup blocked. Please allow popups and try again.", "error");
+                } else if (error.code === 'auth/network-request-failed') {
+                    showNotification("Network error. Please check your connection.", "error");
+                } else {
+                    handleFirebaseError(error, 'sign in');
+                }
             }
         }
 
@@ -2824,8 +2871,23 @@
                 });
             });
 
-            // Google Sign In
-            document.getElementById('google-signin-btn').addEventListener('click', signInWithGoogle);
+            // Google Sign In with fallback
+            document.getElementById('google-signin-btn').addEventListener('click', async function() {
+                console.log('Sign-in button clicked');
+                
+                // Check if Firebase is properly loaded
+                if (!window.firebaseAuth || !window.firebaseProvider || !window.firebaseServices) {
+                    showNotification("Authentication system loading... Please wait a moment and try again.", "warning");
+                    setTimeout(() => {
+                        if (window.firebaseAuth && window.firebaseProvider && window.firebaseServices) {
+                            showNotification("Ready! Please try signing in again.", "success");
+                        }
+                    }, 2000);
+                    return;
+                }
+                
+                await signInWithGoogle();
+            });
 
             // Sign Out
             document.getElementById('signout-btn').addEventListener('click', signOut);
@@ -3049,5 +3111,5 @@
             });
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9919e3771038c198',t:'MTc2MDk3NzcwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9919e87307e2c198',t:'MTc2MDk3NzkxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
