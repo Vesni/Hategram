@@ -8,7 +8,6 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp, where, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -24,14 +23,10 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
-        const provider = new GoogleAuthProvider();
 
         // Make Firebase services globally available
         window.firebaseAuth = auth;
         window.firebaseDb = db;
-        window.firebaseStorage = storage;
-        window.firebaseProvider = provider;
         window.firebaseServices = {
             signInWithPopup,
             GoogleAuthProvider,
@@ -47,9 +42,6 @@
             orderBy,
             onSnapshot,
             serverTimestamp,
-            ref,
-            uploadBytes,
-            getDownloadURL,
             where,
             getDoc,
             setDoc
@@ -1503,6 +1495,35 @@
         // Admin email configuration
         const ADMIN_EMAIL = "vesni277@gmail.com";
 
+        // Cloudinary configuration
+        const CLOUDINARY_CLOUD_NAME = 'dmkos0bxc';
+        const CLOUDINARY_UPLOAD_PRESET = 'hategram_unsigned';
+
+        // Cloudinary upload function
+        async function uploadImageToCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            
+            try {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Upload failed: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Image uploaded successfully to Cloudinary:', data.secure_url);
+                return data.secure_url;
+            } catch (error) {
+                console.error('Cloudinary upload error:', error);
+                throw error;
+            }
+        }
+
         // Initialize app
         window.initializeApp = async function() {
             try {
@@ -1724,23 +1745,6 @@
         function showMainApp() {
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-        }
-
-        // Firebase Storage functions
-        async function uploadImageToFirebase(file) {
-            // Clean filename to avoid CORS issues
-            const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-            const storageRef = window.firebaseServices.ref(window.firebaseStorage, `images/${Date.now()}_${cleanFileName}`);
-            
-            try {
-                const snapshot = await window.firebaseServices.uploadBytes(storageRef, file);
-                const downloadURL = await window.firebaseServices.getDownloadURL(snapshot.ref);
-                console.log('Image uploaded successfully:', downloadURL);
-                return downloadURL;
-            } catch (error) {
-                console.error('Firebase upload error:', error);
-                throw error;
-            }
         }
 
         // Admin functions
@@ -2329,7 +2333,7 @@
                 try {
                     setTimeout(() => progressBar.style.width = '60%', 500);
                     
-                    const imageUrl = await uploadImageToFirebase(file);
+                    const imageUrl = await uploadImageToCloudinary(file);
                     uploadedImageUrl = imageUrl;
                     
                     document.querySelectorAll('.emoji-option').forEach(opt => opt.classList.remove('selected'));
@@ -2365,7 +2369,7 @@
                 reader.readAsDataURL(file);
 
                 try {
-                    const imageUrl = await uploadImageToFirebase(file);
+                    const imageUrl = await uploadImageToCloudinary(file);
                     preview.dataset.newUrl = imageUrl;
                     showNotification("Avatar uploaded! Save profile to apply changes.", "success");
                 } catch (error) {
@@ -2511,5 +2515,5 @@
             });
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'990fbc96d35679c1',t:'MTc2MDg3MTI1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9917a18db6607695',t:'MTc2MDk1NDAzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
