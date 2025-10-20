@@ -1133,6 +1133,161 @@
             }
         }
 
+        /* Update Modal Styles */
+        .update-modal-content {
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .update-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .update-header h2 {
+            margin: 0 0 8px 0;
+            background: linear-gradient(45deg, #833ab4, #fd1d1d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 24px;
+        }
+
+        .update-subtitle {
+            color: #666;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .update-content {
+            margin-bottom: 25px;
+        }
+
+        .update-section {
+            margin-bottom: 20px;
+        }
+
+        .update-section h3 {
+            color: #333;
+            margin: 0 0 12px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .update-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .update-list li {
+            padding: 8px 0;
+            color: #555;
+            font-size: 14px;
+            border-bottom: 1px solid #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .update-list li:last-child {
+            border-bottom: none;
+        }
+
+        .credits-section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .credits-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .credits-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .credits-team {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-width: 180px;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #833ab4, #fd1d1d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .member-info h4 {
+            margin: 0 0 4px 0;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .member-info p {
+            margin: 0;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .credits-footer {
+            text-align: center;
+        }
+
+        .credits-footer p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        @media (max-width: 767px) {
+            .update-modal-content {
+                max-width: 95%;
+                margin: 10px;
+            }
+            
+            .team-member {
+                min-width: 150px;
+            }
+            
+            .credits-team {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
         .share-options {
             display: flex;
             gap: 8px;
@@ -1438,6 +1593,32 @@
     <div id="admin-tab" class="tab-content">
      <div style="padding: 20px;">
       <h2 style="margin-bottom: 20px; color: #333;">Admin Panel</h2>
+      <div style="margin-bottom: 30px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+       <h4 style="margin-bottom: 10px; color: #856404;">⚠️ Firebase Setup Required</h4>
+       <p style="font-size: 14px; color: #856404; margin-bottom: 10px;">To fix the permission errors, add these Firestore security rules:</p>
+       <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 12px; overflow-x: auto; color: #333;">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /posts/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /users/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /messages/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /comments/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}</pre>
+       <p style="font-size: 12px; color: #856404; margin-top: 10px;">Go to Firebase Console → Firestore Database → Rules and paste the above rules.</p>
+      </div>
       <div class="form-group"><label class="form-label">Grant Verification Badge</label> <input type="email" id="verify-email" class="form-input" placeholder="Enter user email to verify"> <button id="grant-verification" class="btn btn-primary" style="margin-top: 10px;">✓ Grant Verification</button>
       </div>
       <div class="form-group" style="margin-top: 30px;"><label class="form-label">Remove Verification Badge</label> <input type="email" id="unverify-email" class="form-input" placeholder="Enter user email to remove verification"> <button id="remove-verification" class="btn btn-danger" style="margin-top: 10px;">✗ Remove Verification</button>
@@ -1478,6 +1659,76 @@
      <h3>Delete Post</h3>
      <p>Are you sure you want to delete this post? This action cannot be undone.</p>
      <div class="modal-buttons"><button id="confirm-delete" class="btn btn-danger">Delete</button> <button id="cancel-delete" class="btn btn-secondary">Cancel</button>
+     </div>
+    </div>
+   </div><!-- Update Log Modal -->
+   <div id="update-modal" class="modal">
+    <div class="modal-content update-modal-content">
+     <div class="update-header">
+      <h2>🎉 Welcome to Hategram Social v2.1!</h2>
+      <p class="update-subtitle">What's New &amp; Improved</p>
+     </div>
+     <div class="update-content">
+      <div class="update-section">
+       <h3>✨ New Features</h3>
+       <ul class="update-list">
+        <li>🔥 Real-time chat with online indicators</li>
+        <li>✓ Verification badge system</li>
+        <li>📸 Enhanced image upload with Cloudinary</li>
+        <li>👤 Complete profile customization</li>
+        <li>🚨 Advanced post reporting system</li>
+        <li>⚙️ Admin panel for moderation</li>
+       </ul>
+      </div>
+      <div class="update-section">
+       <h3>🛠️ Improvements</h3>
+       <ul class="update-list">
+        <li>📱 Better mobile responsiveness</li>
+        <li>⚡ Faster loading and performance</li>
+        <li>🎨 Beautiful animations and transitions</li>
+        <li>🔒 Enhanced security and stability</li>
+        <li>💬 Improved comment system</li>
+       </ul>
+      </div>
+      <div class="update-section">
+       <h3>🐛 Bug Fixes</h3>
+       <ul class="update-list">
+        <li>Fixed SDK loading errors</li>
+        <li>Resolved Firebase permission issues</li>
+        <li>Improved image upload reliability</li>
+        <li>Enhanced error handling</li>
+       </ul>
+      </div>
+     </div>
+     <div class="credits-section">
+      <div class="credits-header">
+       <h3>👨‍💻 Made with ❤️ by</h3>
+      </div>
+      <div class="credits-team">
+       <div class="team-member">
+        <div class="member-avatar">
+         🚀
+        </div>
+        <div class="member-info">
+         <h4>Vesni</h4>
+         <p>Lead Developer &amp; Designer</p>
+        </div>
+       </div>
+       <div class="team-member">
+        <div class="member-avatar">
+         ⚡
+        </div>
+        <div class="member-info">
+         <h4>Forca Team</h4>
+         <p>Development &amp; Innovation</p>
+        </div>
+       </div>
+      </div>
+      <div class="credits-footer">
+       <p>Thank you for using Hategram Social! 🌟</p>
+      </div>
+     </div>
+     <div class="modal-buttons"><button id="close-update" class="btn btn-primary">🎯 Let's Go!</button> <button id="dont-show-again" class="btn btn-secondary">Don't show again</button>
      </div>
     </div>
    </div>
@@ -1541,6 +1792,9 @@
                         
                         // Check admin status after user loads
                         checkAdminStatus();
+                        
+                        // Show update modal for new users or if not dismissed
+                        showUpdateModalIfNeeded();
                     } else {
                         currentUser = null;
                         currentUserProfile = null;
@@ -2261,6 +2515,30 @@
             deletingPostId = null;
         }
 
+        // Update Modal Functions
+        function showUpdateModalIfNeeded() {
+            const currentVersion = "2.1.0";
+            const dismissedVersion = localStorage.getItem('hategram_dismissed_update');
+            
+            // Show modal if user hasn't dismissed this version
+            if (dismissedVersion !== currentVersion) {
+                setTimeout(() => {
+                    document.getElementById('update-modal').classList.add('show');
+                }, 1000); // Show after 1 second delay
+            }
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('update-modal').classList.remove('show');
+        }
+
+        function dismissUpdateModal() {
+            const currentVersion = "2.1.0";
+            localStorage.setItem('hategram_dismissed_update', currentVersion);
+            closeUpdateModal();
+            showNotification("Welcome to Hategram Social! 🎉", "success");
+        }
+
         // Global functions for onclick handlers
         window.likePost = function(postId, currentLikes, likedBy) {
             if (currentUser) {
@@ -2494,6 +2772,10 @@
 
             document.getElementById('cancel-delete').addEventListener('click', closeDeleteModal);
 
+            // Update modal buttons
+            document.getElementById('close-update').addEventListener('click', closeUpdateModal);
+            document.getElementById('dont-show-again').addEventListener('click', dismissUpdateModal);
+
             // Close modals on backdrop click
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', function(e) {
@@ -2518,5 +2800,5 @@
             });
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'991986a155c0cce2',t:'MTc2MDk3MzkwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'991995111263e911',t:'MTc2MDk3NDQ5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
