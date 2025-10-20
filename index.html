@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hategram Social</title>
+  <title>Hategram</title>
   <script src="https://cdn.tailwindcss.com"></script><!-- Firebase SDK -->
   <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -153,11 +153,13 @@
         }
 
         .verified-badge {
-            color: #1da1f2;
-            font-size: 16px;
-            margin-left: 6px;
-            text-shadow: 0 0 8px rgba(29, 161, 242, 0.5);
-            animation: verifiedGlow 2s ease-in-out infinite alternate;
+            color: #1da1f2 !important;
+            font-size: 16px !important;
+            margin-left: 4px !important;
+            text-shadow: 0 0 8px rgba(29, 161, 242, 0.8) !important;
+            animation: verifiedGlow 2s ease-in-out infinite alternate !important;
+            display: inline-block !important;
+            font-weight: bold !important;
         }
 
         @keyframes verifiedGlow {
@@ -583,7 +585,7 @@
 
         .post-image {
             width: 100%;
-            height: 180px;
+            max-height: 400px;
             background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             border-radius: 12px;
             display: flex;
@@ -593,11 +595,12 @@
             margin: 12px 0;
             border: 2px solid #dee2e6;
             overflow: hidden;
+            position: relative;
         }
 
         @media (min-width: 768px) {
             .post-image {
-                height: 200px;
+                max-height: 500px;
                 font-size: 60px;
                 margin: 15px 0;
             }
@@ -605,8 +608,27 @@
 
         .post-image img {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 10px;
+            background: white;
+        }
+
+        @media (min-width: 768px) {
+            .post-image img {
+                max-height: 500px;
+            }
+        }
+
+        .post-image.emoji-only {
+            height: 180px;
+        }
+
+        @media (min-width: 768px) {
+            .post-image.emoji-only {
+                height: 200px;
+            }
         }
 
         .post-content {
@@ -776,23 +798,14 @@
         }
 
         .post .verified-badge,
-        .message-username .verified-badge {
-            color: #1da1f2;
-            font-size: 18px;
-            margin-left: 6px;
-            text-shadow: 0 0 10px rgba(29, 161, 242, 0.6);
-            animation: verifiedPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes verifiedPulse {
-            0%, 100% { 
-                opacity: 1;
-                transform: scale(1);
-            }
-            50% { 
-                opacity: 0.8;
-                transform: scale(1.15);
-            }
+        .message-username .verified-badge,
+        .comment-username .verified-badge {
+            color: #1da1f2 !important;
+            font-size: 14px !important;
+            margin-left: 4px !important;
+            text-shadow: 0 0 8px rgba(29, 161, 242, 0.8) !important;
+            animation: verifiedGlow 2s ease-in-out infinite alternate !important;
+            display: inline-block !important;
         }
 
         @media (min-width: 768px) {
@@ -1885,7 +1898,7 @@ service cloud.firestore {
                     updatedProfile
                 );
 
-                // Update local profile data
+                // Update local profile data immediately
                 currentUserProfile = { ...currentUserProfile, ...profileData };
                 
                 // Update header immediately with new data
@@ -1894,11 +1907,25 @@ service cloud.firestore {
                 // Update all existing posts with new profile info
                 await updateExistingPostsWithNewProfile(profileData);
                 
+                // Force refresh of posts to show updated profile info
+                if (postsListener) {
+                    // The real-time listener will automatically update the UI
+                    console.log("Profile updated, posts will refresh automatically");
+                }
+                
                 hideProfileForm();
                 showNotification("Profile updated successfully! ✨", "success");
             } catch (error) {
                 console.error("Error updating profile:", error);
-                showNotification("Failed to update profile. Please try again.", "error");
+                let errorMessage = "Failed to update profile. Please try again.";
+                
+                if (error.code === 'permission-denied') {
+                    errorMessage = "Permission denied. Please check Firebase security rules.";
+                } else if (error.code === 'unauthenticated') {
+                    errorMessage = "Please sign in again to update your profile.";
+                }
+                
+                showNotification(errorMessage, "error");
             }
 
             setLoading(false);
@@ -1967,7 +1994,7 @@ service cloud.firestore {
                 }
                 
                 if (userVerified) {
-                    userVerified.style.display = currentUserProfile.verified ? 'inline' : 'none';
+                    userVerified.style.display = currentUserProfile.verified ? 'inline-block' : 'none';
                 }
             }
         }
@@ -2325,7 +2352,7 @@ service cloud.firestore {
                                      onerror="console.error('Image failed to load:', this.src); this.parentElement.innerHTML='<div style=\\'padding: 40px; text-align: center; color: #666; font-size: 24px;\\'>📷<br><small style=\\'font-size: 14px; margin-top: 10px; display: block;\\'>Image failed to load</small></div>'">
                             </div>
                         ` : post.imageEmoji ? `
-                            <div class="post-image">${post.imageEmoji}</div>
+                            <div class="post-image emoji-only">${post.imageEmoji}</div>
                         ` : ''}
                         
                         <div class="post-content">
@@ -2800,5 +2827,5 @@ service cloud.firestore {
             });
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'991995111263e911',t:'MTc2MDk3NDQ5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9919bac3a3819475',t:'MTc2MDk3NjA0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
